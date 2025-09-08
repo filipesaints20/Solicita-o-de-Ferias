@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <title>Sistema de Solicitação de Férias</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    nav button { margin-right: 10px; }
+    section { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Sistema de Solicitação de Férias</h1>
+
+  <!-- Menu de navegação -->
+  <nav>
+    <button onclick="mostrar('envio')">Solicitar Férias</button>
+    <button onclick="mostrar('consulta')">Consultar Status</button>
+    <button onclick="mostrar('upload')">Enviar PDF Assinado</button>
+  </nav>
+
+  <!-- Seção Solicitação -->
+  <section id="envio">
+    <h2>Solicitar Férias</h2>
+    <form id="formEnvio">
+      <label>Nome<br><input name="nome" required></label><br>
+      <label>E-mail (seu)<br><input name="email" type="email" required></label><br>
+      <label>Gestor<br><input name="gestor" required></label><br>
+      <label>E-mail do Gestor<br><input name="gestorEmail" type="email" required></label><br>
+      <label>Data Início<br><input name="inicio" type="date" required></label><br>
+      <label>Data Fim<br><input name="fim" type="date" required></label><br>
+      <label>Observações<br><textarea name="obs"></textarea></label><br>
+      <button type="submit">Enviar</button>
+    </form>
+  </section>
+
+  <!-- Seção Consulta -->
+  <section id="consulta" style="display:none">
+    <h2>Consultar Status</h2>
+    <form id="formConsulta">
+      <label>Digite seu e-mail:<br><input name="email" type="email" required></label>
+      <button type="submit">Consultar</button>
+    </form>
+    <div id="resultadoConsulta"></div>
+  </section>
+
+  <!-- Seção Upload -->
+  <section id="upload" style="display:none">
+    <h2>Enviar PDF Assinado</h2>
+    <p id="infoUpload"></p>
+    <form id="formUpload">
+      <input type="file" id="fileUpload" accept="application/pdf" required><br>
+      <button type="submit">Enviar</button>
+    </form>
+    <div id="respUpload"></div>
+  </section>
+
+  <script>
+    // Substitua pela URL do seu Web App
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxZ6K3Ypj3_lfOdt_am9N9yb85Md-ibrlgMQWHps1DZ0QjnCqLsM8rgWf3ToqlTbNPv/exec";
+
+    // Função de navegação entre seções
+    function mostrar(secao) {
+      document.getElementById('envio').style.display = 'none';
+      document.getElementById('consulta').style.display = 'none';
+      document.getElementById('upload').style.display = 'none';
+      document.getElementById(secao).style.display = 'block';
+    }
+
+    // -----------------------------
+    // Envio de Solicitação
+    document.getElementById('formEnvio').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+      try {
+        const resp = await fetch(WEBAPP_URL, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(data)
+        });
+        const r = await resp.json();
+        if(r.ok) {
+          alert('Solicitação enviada! ID: ' + r.id);
+          e.target.reset();
+        } else {
+          alert('Erro: ' + JSON.stringify(r));
+        }
+      } catch(err) {
+        alert('Falha: ' + err.message);
+      }
+    });
+
+    // -----------------------------
+    // Consulta de Status
+    document.getElementById('formConsulta').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = e.target.email.value;
+      try {
+        const resp = await fetch(`${WEBAPP_URL}?check=${encodeURIComponent(email)}`);
+        const data = await resp.json();
+        const out = document.getElementById('resultadoConsulta');
+        if(!data || data.length===0){
+          out.innerHTML = '<p>Nenhuma solicitação encontrada.</p>';
+          return;
+        }
+        let html = '<ul>';
+        data.forEach(s => {
+          html += `<li><b>ID:</b> ${s.id} — ${s.inicio} até ${s.fim} — <b>Status:</b> ${s.status} ${s.linkDocumento ? ` — <a href="${s.linkDocumento}" target="_blank">Documento</a>` : ''}</li>`;
+        });
+        html += '</ul>';
+        out.innerHTML = html;
+      } catch(err) {
+        document.getElementById('resultadoConsulta').innerText = 'Erro: ' + err.message;
+      }
+    });
+
+    // -----------------------------
+    // Upload PDF assinado
+    // Recebe id e token pela query string
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    const token = params.get('token');
+    document.getElementById('infoUpload').innerText = id && token ? `ID da solicitação: ${id}` : 'Link inválido.';
+
+    document.getElementById('formUpload').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const file = document.getElementById('fileUpload').files[0];
+      if(!file) return alert('Selecione o arquivo');
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result.split(',')[1];
+        const payload = {
+          action: 'upload',
+          id: id,
+          token: token,
+          fileName: file.name,
+          mimeType: file.type || 'application/pdf',
+          fileData: base64
+        };
+        try {
+          const resp = await fetch(WEBAPP_URL, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(payload)
+          });
+          const r = await resp.json();
+          if(r.ok){
+            document.getElementById('respUpload').innerHTML = `Arquivo enviado com sucesso! <a href="${r.url}" target="_blank">Ver PDF</a>`;
+          } else {
+            document.getElementById('respUpload').innerText = 'Erro: '+ (r.error || JSON.stringify(r));
+          }
+        } catch(err){
+          document.getElementById('respUpload').innerText = 'Falha: ' + err.message;
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+  </script>
+</body>
+</html>
