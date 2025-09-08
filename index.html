@@ -1,41 +1,34 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8"/>
   <title>Sistema de Solicitação de Férias</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    nav button { margin-right: 10px; }
-    section { margin-top: 20px; }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>Sistema de Solicitação de Férias</h1>
 
-  <!-- Menu de navegação -->
   <nav>
     <button onclick="mostrar('envio')">Solicitar Férias</button>
     <button onclick="mostrar('consulta')">Consultar Status</button>
     <button onclick="mostrar('upload')">Enviar PDF Assinado</button>
   </nav>
 
-  <!-- Seção Solicitação -->
-  <section id="envio">
+  <section id="envio" class="active">
     <h2>Solicitar Férias</h2>
     <form id="formEnvio">
-      <label>Nome<br><input name="nome" required></label><br>
-      <label>E-mail (seu)<br><input name="email" type="email" required></label><br>
-      <label>Gestor<br><input name="gestor" required></label><br>
-      <label>E-mail do Gestor<br><input name="gestorEmail" type="email" required></label><br>
-      <label>Data Início<br><input name="inicio" type="date" required></label><br>
-      <label>Data Fim<br><input name="fim" type="date" required></label><br>
-      <label>Observações<br><textarea name="obs"></textarea></label><br>
+      <label>Nome<br><input name="nome" required></label>
+      <label>E-mail (seu)<br><input name="email" type="email" required></label>
+      <label>Gestor<br><input name="gestor" required></label>
+      <label>E-mail do Gestor<br><input name="gestorEmail" type="email" required></label>
+      <label>Data Início<br><input name="inicio" type="date" required></label>
+      <label>Data Fim<br><input name="fim" type="date" required></label>
+      <label>Observações<br><textarea name="obs"></textarea></label>
       <button type="submit">Enviar</button>
     </form>
   </section>
 
-  <!-- Seção Consulta -->
-  <section id="consulta" style="display:none">
+  <section id="consulta">
     <h2>Consultar Status</h2>
     <form id="formConsulta">
       <label>Digite seu e-mail:<br><input name="email" type="email" required></label>
@@ -44,8 +37,7 @@
     <div id="resultadoConsulta"></div>
   </section>
 
-  <!-- Seção Upload -->
-  <section id="upload" style="display:none">
+  <section id="upload">
     <h2>Enviar PDF Assinado</h2>
     <p id="infoUpload"></p>
     <form id="formUpload">
@@ -56,19 +48,13 @@
   </section>
 
   <script>
-    // Substitua pela URL do seu Web App
     const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwK64AJdnF_WbwKEW9OSMKfiwtH5NyqpiuIV6Zv1ts1xq0-iqO-_659_KEdsaFGpMrF/exec";
 
-    // Função de navegação entre seções
     function mostrar(secao) {
-      document.getElementById('envio').style.display = 'none';
-      document.getElementById('consulta').style.display = 'none';
-      document.getElementById('upload').style.display = 'none';
-      document.getElementById(secao).style.display = 'block';
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      document.getElementById(secao).classList.add('active');
     }
 
-    // -----------------------------
-    // Envio de Solicitação
     document.getElementById('formEnvio').addEventListener('submit', async (e) => {
       e.preventDefault();
       const data = Object.fromEntries(new FormData(e.target));
@@ -80,18 +66,16 @@
         });
         const r = await resp.json();
         if(r.ok) {
-          alert('Solicitação enviada! ID: ' + r.id);
           e.target.reset();
+          document.getElementById('formEnvio').insertAdjacentHTML('beforeend', `<div class="success">Solicitação enviada! ID: ${r.id}</div>`);
         } else {
-          alert('Erro: ' + JSON.stringify(r));
+          document.getElementById('formEnvio').insertAdjacentHTML('beforeend', `<div class="error">Erro: ${JSON.stringify(r)}</div>`);
         }
       } catch(err) {
-        alert('Falha: ' + err.message);
+        document.getElementById('formEnvio').insertAdjacentHTML('beforeend', `<div class="error">Falha: ${err.message}</div>`);
       }
     });
 
-    // -----------------------------
-    // Consulta de Status
     document.getElementById('formConsulta').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = e.target.email.value;
@@ -99,28 +83,26 @@
         const resp = await fetch(`${WEBAPP_URL}?check=${encodeURIComponent(email)}`);
         const data = await resp.json();
         const out = document.getElementById('resultadoConsulta');
-        if(!data || data.length===0){
-          out.innerHTML = '<p>Nenhuma solicitação encontrada.</p>';
+        if(!data || data.length === 0){
+          out.innerHTML = '<p class="error">Nenhuma solicitação encontrada.</p>';
           return;
         }
         let html = '<ul>';
         data.forEach(s => {
-          html += `<li><b>ID:</b> ${s.id} — ${s.inicio} até ${s.fim} — <b>Status:</b> ${s.status} ${s.linkDocumento ? ` — <a href="${s.linkDocumento}" target="_blank">Documento</a>` : ''}</li>`;
+          html += `<li><b>ID:</b> ${s.id}<br><b>Período:</b> ${s.inicio} até ${s.fim}<br><b>Status:</b> ${s.status}${s.linkDocumento ? `<br><a href="${s.linkDocumento}" target="_blank">📄 Documento</a>` : ''}</li>`;
         });
         html += '</ul>';
         out.innerHTML = html;
       } catch(err) {
-        document.getElementById('resultadoConsulta').innerText = 'Erro: ' + err.message;
+        out.innerHTML = `<div class="error">Erro: ${err.message}</div>`;
       }
     });
 
-    // -----------------------------
-    // Upload PDF assinado
-    // Recebe id e token pela query string
     const params = new URLSearchParams(location.search);
     const id = params.get('id');
     const token = params.get('token');
     document.getElementById('infoUpload').innerText = id && token ? `ID da solicitação: ${id}` : 'Link inválido.';
+    if (!id || !token) document.getElementById('formUpload').style.display = 'none';
 
     document.getElementById('formUpload').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -145,17 +127,16 @@
           });
           const r = await resp.json();
           if(r.ok){
-            document.getElementById('respUpload').innerHTML = `Arquivo enviado com sucesso! <a href="${r.url}" target="_blank">Ver PDF</a>`;
+            document.getElementById('respUpload').innerHTML = `<div class="success">Arquivo enviado com sucesso! <a href="${r.url}" target="_blank">Ver PDF</a></div>`;
           } else {
-            document.getElementById('respUpload').innerText = 'Erro: '+ (r.error || JSON.stringify(r));
+            document.getElementById('respUpload').innerHTML = `<div class="error">Erro: ${r.error || JSON.stringify(r)}</div>`;
           }
         } catch(err){
-          document.getElementById('respUpload').innerText = 'Falha: ' + err.message;
+          document.getElementById('respUpload').innerHTML = `<div class="error">Falha: ${err.message}</div>`;
         }
       };
       reader.readAsDataURL(file);
     });
-
   </script>
 </body>
 </html>
