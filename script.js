@@ -1,4 +1,4 @@
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyMwiomuVnMODX_wBhk1Lpeh7V4qsj0nTxlHSXNEkh42wt5m6FqbC7hn_QKnTKIHc4a/exec";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbw0Se8TGHPqePe-fCMIRDAkfric__T0vWCQEviaZcscOYW6bZsUdb5_jaSOVY2szGtUDA/exec";
 
 // Alterna entre seções visíveis
 function mostrar(secao) {
