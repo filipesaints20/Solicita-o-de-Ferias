@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sistema de Solicitação de Férias</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -9,134 +10,52 @@
   <h1>Sistema de Solicitação de Férias</h1>
 
   <nav>
-    <button onclick="mostrar('envio')">Solicitar Férias</button>
-    <button onclick="mostrar('consulta')">Consultar Status</button>
-    <button onclick="mostrar('upload')">Enviar PDF Assinado</button>
+    <button onclick="mostrar('envio')" aria-label="Solicitar Férias">Solicitar Férias</button>
+    <button onclick="mostrar('consulta')" aria-label="Consultar Status">Consultar Status</button>
+    <button onclick="mostrar('upload')" aria-label="Enviar PDF Assinado">Enviar PDF Assinado</button>
   </nav>
 
   <section id="envio" class="active">
-    <h2>Solicitar Férias</h2>
     <form id="formEnvio">
-      <label>Nome<br><input name="nome" required></label>
-      <label>E-mail (seu)<br><input name="email" type="email" required></label>
-      <label>Gestor<br><input name="gestor" required></label>
-      <label>E-mail do Gestor<br><input name="gestorEmail" type="email" required></label>
-      <label>Data Início<br><input name="inicio" type="date" required></label>
-      <label>Data Fim<br><input name="fim" type="date" required></label>
-      <label>Observações<br><textarea name="obs"></textarea></label>
-      <button type="submit">Enviar</button>
+      <fieldset>
+        <legend>Solicitar Férias</legend>
+        <label>Nome<br><input name="nome" required></label>
+        <label>E-mail (seu)<br><input name="email" type="email" required></label>
+        <label>Gestor<br><input name="gestor" required></label>
+        <label>E-mail do Gestor<br><input name="gestorEmail" type="email" required></label>
+        <label>Data Início<br><input name="inicio" type="date" required></label>
+        <label>Data Fim<br><input name="fim" type="date" required></label>
+        <label>Observações<br><textarea name="obs"></textarea></label>
+        <button type="submit">Enviar</button>
+        <div id="respEnvio"></div>
+      </fieldset>
     </form>
   </section>
 
   <section id="consulta">
-    <h2>Consultar Status</h2>
     <form id="formConsulta">
-      <label>Digite seu e-mail:<br><input name="email" type="email" required></label>
-      <button type="submit">Consultar</button>
+      <fieldset>
+        <legend>Consultar Status</legend>
+        <label>Digite seu e-mail:<br><input name="email" type="email" required></label>
+        <button type="submit">Consultar</button>
+        <div id="resultadoConsulta"></div>
+      </fieldset>
     </form>
-    <div id="resultadoConsulta"></div>
   </section>
 
   <section id="upload">
-    <h2>Enviar PDF Assinado</h2>
-    <p id="infoUpload"></p>
-    <form id="formUpload">
-      <input type="file" id="fileUpload" accept="application/pdf" required><br>
-      <button type="submit">Enviar</button>
-    </form>
-    <div id="respUpload"></div>
+    <fieldset>
+      <legend>Enviar PDF Assinado</legend>
+      <p id="infoUpload"></p>
+      <form id="formUpload">
+        <input type="file" id="fileUpload" accept="application/pdf" required><br>
+        <button type="submit">Enviar</button>
+        <div id="respUpload"></div>
+      </form>
+    </fieldset>
   </section>
 
-  <script>
-    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbw0Se8TGHPqePe-fCMIRDAkfric__T0vWCQEviaZcscOYW6bZsUdb5_jaSOVY2szGtUDA/exec";
-
-    function mostrar(secao) {
-      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-      document.getElementById(secao).classList.add('active');
-    }
-
-    document.getElementById('formEnvio').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const data = Object.fromEntries(new FormData(e.target));
-      try {
-        const resp = await fetch(WEBAPP_URL, {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify(data)
-        });
-        const r = await resp.json();
-        if(r.ok) {
-          e.target.reset();
-          document.getElementById('formEnvio').insertAdjacentHTML('beforeend', `<div class="success">Solicitação enviada! ID: ${r.id}</div>`);
-        } else {
-          document.getElementById('formEnvio').insertAdjacentHTML('beforeend', `<div class="error">Erro: ${JSON.stringify(r)}</div>`);
-        }
-      } catch(err) {
-        document.getElementById('formEnvio').insertAdjacentHTML('beforeend', `<div class="error">Falha: ${err.message}</div>`);
-      }
-    });
-
-    document.getElementById('formConsulta').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = e.target.email.value;
-      try {
-        const resp = await fetch(`${WEBAPP_URL}?check=${encodeURIComponent(email)}`);
-        const data = await resp.json();
-        const out = document.getElementById('resultadoConsulta');
-        if(!data || data.length === 0){
-          out.innerHTML = '<p class="error">Nenhuma solicitação encontrada.</p>';
-          return;
-        }
-        let html = '<ul>';
-        data.forEach(s => {
-          html += `<li><b>ID:</b> ${s.id}<br><b>Período:</b> ${s.inicio} até ${s.fim}<br><b>Status:</b> ${s.status}${s.linkDocumento ? `<br><a href="${s.linkDocumento}" target="_blank">📄 Documento</a>` : ''}</li>`;
-        });
-        html += '</ul>';
-        out.innerHTML = html;
-      } catch(err) {
-        out.innerHTML = `<div class="error">Erro: ${err.message}</div>`;
-      }
-    });
-
-    const params = new URLSearchParams(location.search);
-    const id = params.get('id');
-    const token = params.get('token');
-    document.getElementById('infoUpload').innerText = id && token ? `ID da solicitação: ${id}` : 'Link inválido.';
-    if (!id || !token) document.getElementById('formUpload').style.display = 'none';
-
-    document.getElementById('formUpload').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const file = document.getElementById('fileUpload').files[0];
-      if(!file) return alert('Selecione o arquivo');
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const base64 = reader.result.split(',')[1];
-        const payload = {
-          action: 'upload',
-          id: id,
-          token: token,
-          fileName: file.name,
-          mimeType: file.type || 'application/pdf',
-          fileData: base64
-        };
-        try {
-          const resp = await fetch(WEBAPP_URL, {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify(payload)
-          });
-          const r = await resp.json();
-          if(r.ok){
-            document.getElementById('respUpload').innerHTML = `<div class="success">Arquivo enviado com sucesso! <a href="${r.url}" target="_blank">Ver PDF</a></div>`;
-          } else {
-            document.getElementById('respUpload').innerHTML = `<div class="error">Erro: ${r.error || JSON.stringify(r)}</div>`;
-          }
-        } catch(err){
-          document.getElementById('respUpload').innerHTML = `<div class="error">Falha: ${err.message}</div>`;
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
+
