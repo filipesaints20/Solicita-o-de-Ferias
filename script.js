@@ -1,21 +1,25 @@
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbw0Se8TGHPqePe-fCMIRDAkfric__T0vWCQEviaZcscOYW6bZsUdb5_jaSOVY2szGtUDA/exec";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyMwiomuVnMODX_wBhk1Lpeh7V4qsj0nTxlHSXNEkh42wt5m6FqbC7hn_QKnTKIHc4a/exec";
 
+// Alterna entre seções visíveis
 function mostrar(secao) {
   document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
   document.getElementById(secao).classList.add('active');
 }
 
+// Exibe mensagens de sucesso ou erro
 function exibirMensagem(tipo, mensagem, destinoId) {
   const destino = document.getElementById(destinoId);
   destino.innerHTML = `<div class="${tipo}">${mensagem}</div>`;
 }
 
+// Escapa caracteres HTML para segurança
 function escapeHTML(str) {
   return str.replace(/[&<>"']/g, tag => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[tag]));
 }
 
+// Envio de solicitação de férias
 document.getElementById('formEnvio').addEventListener('submit', async (e) => {
   e.preventDefault();
   const data = Object.fromEntries(new FormData(e.target));
@@ -44,6 +48,7 @@ document.getElementById('formEnvio').addEventListener('submit', async (e) => {
   }
 });
 
+// Consulta de status por e-mail
 document.getElementById('formConsulta').addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = e.target.email.value;
@@ -67,6 +72,7 @@ document.getElementById('formConsulta').addEventListener('submit', async (e) => 
   }
 });
 
+// Upload de PDF assinado
 const params = new URLSearchParams(location.search);
 const id = params.get('id');
 const token = params.get('token');
