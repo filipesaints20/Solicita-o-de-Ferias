@@ -115,3 +115,4 @@ document.getElementById('formUpload').addEventListener('submit', async (e) => {
   };
   reader.readAsDataURL(file);
 });
+
