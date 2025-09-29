@@ -1,118 +1,52 @@
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbw0Se8TGHPqePe-fCMIRDAkfric__T0vWCQEviaZcscOYW6bZsUdb5_jaSOVY2szGtUDA/exec";
+// Captura o formulário
+const formSolicitacao = document.getElementById("formSolicitacao");
+const solicitacaoSec = document.getElementById("solicitacao");
+const aprovacaoGestorSec = document.getElementById("aprovacaoGestor");
+const rhSec = document.getElementById("rh");
+const resultadoSec = document.getElementById("resultado");
 
-// Alterna entre seções visíveis
-function mostrar(secao) {
-  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-  document.getElementById(secao).classList.add('active');
-}
+let dados = {}; // Armazena os dados da solicitação
 
-// Exibe mensagens de sucesso ou erro
-function exibirMensagem(tipo, mensagem, destinoId) {
-  const destino = document.getElementById(destinoId);
-  destino.innerHTML = `<div class="${tipo}">${mensagem}</div>`;
-}
-
-// Escapa caracteres HTML para segurança
-function escapeHTML(str) {
-  return str.replace(/[&<>"']/g, tag => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[tag]));
-}
-
-// Envio de solicitação de férias
-document.getElementById('formEnvio').addEventListener('submit', async (e) => {
+// Etapa 1 - Enviar solicitação
+formSolicitacao.addEventListener("submit", (e) => {
   e.preventDefault();
-  const data = Object.fromEntries(new FormData(e.target));
-  const inicio = new Date(data.inicio);
-  const fim = new Date(data.fim);
-  if (fim <= inicio) {
-    exibirMensagem('error', 'A data de fim deve ser após a data de início.', 'respEnvio');
-    return;
-  }
-  data.obs = escapeHTML(data.obs || '');
-  try {
-    const resp = await fetch(WEBAPP_URL, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(data)
-    });
-    const r = await resp.json();
-    if(r.ok) {
-      e.target.reset();
-      exibirMensagem('success', `Solicitação enviada! ID: ${r.id}`, 'respEnvio');
-    } else {
-      exibirMensagem('error', `Erro: ${JSON.stringify(r)}`, 'respEnvio');
-    }
-  } catch(err) {
-    exibirMensagem('error', `Falha: ${err.message}`, 'respEnvio');
-  }
-});
-
-// Consulta de status por e-mail
-document.getElementById('formConsulta').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = e.target.email.value;
-  const out = document.getElementById('resultadoConsulta');
-  out.innerHTML = 'Consultando...';
-  try {
-    const resp = await fetch(`${WEBAPP_URL}?check=${encodeURIComponent(email)}`);
-    const data = await resp.json();
-    if(!data || data.length === 0){
-      exibirMensagem('error', 'Nenhuma solicitação encontrada.', 'resultadoConsulta');
-      return;
-    }
-    let html = '<ul>';
-    data.forEach(s => {
-      html += `<li><b>ID:</b> ${s.id}<br><b>Período:</b> ${s.inicio} até ${s.fim}<br><b>Status:</b> ${s.status}${s.linkDocumento ? `<br><a href="${s.linkDocumento}" target="_blank">📄 Documento</a>` : ''}</li>`;
-    });
-    html += '</ul>';
-    out.innerHTML = html;
-  } catch(err) {
-    exibirMensagem('error', `Erro: ${err.message}`, 'resultadoConsulta');
-  }
-});
-
-// Upload de PDF assinado
-const params = new URLSearchParams(location.search);
-const id = params.get('id');
-const token = params.get('token');
-document.getElementById('infoUpload').innerText = id && token ? `ID da solicitação: ${id}` : 'Link inválido.';
-if (!id || !token) document.getElementById('formUpload').style.display = 'none';
-
-document.getElementById('formUpload').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const file = document.getElementById('fileUpload').files[0];
-  if(!file) return alert('Selecione o arquivo');
-  if(file.size > 5 * 1024 * 1024) return alert('O arquivo deve ter no máximo 5MB.');
-  if (!confirm("Tem certeza que deseja enviar este PDF?")) return;
-
-  const reader = new FileReader();
-  reader.onload = async () => {
-    const base64 = reader.result.split(',')[1];
-    const payload = {
-      action: 'upload',
-      id: id,
-      token: token,
-      fileName: file.name,
-      mimeType: file.type || 'application/pdf',
-      fileData: base64
-    };
-    try {
-      const resp = await fetch(WEBAPP_URL, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(payload)
-      });
-      const r = await resp.json();
-      if(r.ok){
-        exibirMensagem('success', `Arquivo enviado com sucesso! <a href="${r.url}" target="_blank">Ver PDF</a>`, 'respUpload');
-      } else {
-        exibirMensagem('error', `Erro: ${r.error || JSON.stringify(r)}`, 'respUpload');
-      }
-    } catch(err){
-      exibirMensagem('error', `Falha: ${err.message}`, 'respUpload');
-    }
+  dados = {
+    nome: document.getElementById("nome").value,
+    dataInicio: document.getElementById("dataInicio").value,
+    dataFim: document.getElementById("dataFim").value
   };
-  reader.readAsDataURL(file);
+
+  solicitacaoSec.classList.add("hidden");
+  aprovacaoGestorSec.classList.remove("hidden");
+
+  document.getElementById("dadosSolicitacao").innerText =
+    `Solicitação de ${dados.nome} para férias de ${dados.dataInicio} até ${dados.dataFim}.`;
 });
+
+// Etapa 2 - Aprovação do Gestor
+function aprovarGestor() {
+  aprovacaoGestorSec.classList.add("hidden");
+  rhSec.classList.remove("hidden");
+
+  document.getElementById("dadosRH").innerText =
+    `Gestor aprovou a solicitação de ${dados.nome}. Agora precisa da confirmação do RH.`;
+}
+
+function rejeitarGestor() {
+  aprovacaoGestorSec.classList.add("hidden");
+  resultadoSec.classList.remove("hidden");
+
+  document.getElementById("mensagemFinal").innerText =
+    `Solicitação de ${dados.nome} foi REJEITADA pelo Gestor. Motivo: falta de alinhamento com a equipa.`;
+}
+
+// Etapa 3 - Confirmação do RH
+function confirmarRH() {
+  rhSec.classList.add("hidden");
+  resultadoSec.classList.remove("hidden");
+
+  document.getElementById("mensagemFinal").innerText =
+    `RH confirmou as férias de ${dados.nome}. Boa viagem! 🎉`;
+}
+
 

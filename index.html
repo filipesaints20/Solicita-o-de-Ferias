@@ -1,58 +1,50 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt">
 <head>
-  <meta charset="utf-8"/>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Solicitação de Férias</title>
+  <title>Solicitação de Férias</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Sistema de Solicitação de Férias</h1>
+  <h1>Solicitação de Férias</h1>
 
-  <nav>
-    <button onclick="mostrar('envio')" aria-label="Solicitar Férias">Solicitar Férias</button>
-    <button onclick="mostrar('consulta')" aria-label="Consultar Status">Consultar Status</button>
-    <button onclick="mostrar('upload')" aria-label="Enviar PDF Assinado">Enviar PDF Assinado</button>
-  </nav>
+  <!-- Etapa 1: Solicitação -->
+  <section id="solicitacao">
+    <h2>Formulário de Solicitação</h2>
+    <form id="formSolicitacao">
+      <label>Nome do Colaborador:</label>
+      <input type="text" id="nome" required>
 
-  <section id="envio" class="active">
-    <form id="formEnvio">
-      <fieldset>
-        <legend>Solicitar Férias</legend>
-        <label>Nome<br><input name="nome" required></label>
-        <label>E-mail (seu)<br><input name="email" type="email" required></label>
-        <label>Gestor<br><input name="gestor" required></label>
-        <label>E-mail do Gestor<br><input name="gestorEmail" type="email" required></label>
-        <label>Data Início<br><input name="inicio" type="date" required></label>
-        <label>Data Fim<br><input name="fim" type="date" required></label>
-        <label>Observações<br><textarea name="obs"></textarea></label>
-        <button type="submit">Enviar</button>
-        <div id="respEnvio"></div>
-      </fieldset>
+      <label>Data de Início:</label>
+      <input type="date" id="dataInicio" required>
+
+      <label>Data de Fim:</label>
+      <input type="date" id="dataFim" required>
+
+      <button type="submit">Enviar para Gestor</button>
     </form>
   </section>
 
-  <section id="consulta">
-    <form id="formConsulta">
-      <fieldset>
-        <legend>Consultar Status</legend>
-        <label>Digite seu e-mail:<br><input name="email" type="email" required></label>
-        <button type="submit">Consultar</button>
-        <div id="resultadoConsulta"></div>
-      </fieldset>
-    </form>
+  <!-- Etapa 2: Aprovação Gestor -->
+  <section id="aprovacaoGestor" class="hidden">
+    <h2>Aprovação do Gestor</h2>
+    <p id="dadosSolicitacao"></p>
+    <button onclick="aprovarGestor()">Aprovar</button>
+    <button onclick="rejeitarGestor()">Rejeitar</button>
   </section>
 
-  <section id="upload">
-    <fieldset>
-      <legend>Enviar PDF Assinado</legend>
-      <p id="infoUpload"></p>
-      <form id="formUpload">
-        <input type="file" id="fileUpload" accept="application/pdf" required><br>
-        <button type="submit">Enviar</button>
-        <div id="respUpload"></div>
-      </form>
-    </fieldset>
+  <!-- Etapa 3: RH -->
+  <section id="rh" class="hidden">
+    <h2>Confirmação RH</h2>
+    <p id="dadosRH"></p>
+    <button onclick="confirmarRH()">Confirmar RH</button>
+  </section>
+
+  <!-- Etapa 4: Retorno ao Colaborador -->
+  <section id="resultado" class="hidden">
+    <h2>Resultado Final</h2>
+    <p id="mensagemFinal"></p>
   </section>
 
   <script src="script.js"></script>
