@@ -3,48 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Solicitação de Férias</title>
+  <title>Sistema de Férias</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Solicitação de Férias</h1>
+  <h1>Sistema de Solicitação de Férias</h1>
 
-  <!-- Etapa 1: Solicitação -->
-  <section id="solicitacao">
-    <h2>Formulário de Solicitação</h2>
+  <!-- Menu de seleção de perfil -->
+  <nav>
+    <button onclick="abrirSecao('solicitanteMenu')">Solicitante</button>
+    <button onclick="abrirSecao('gestorMenu')">Gestor</button>
+    <button onclick="abrirSecao('rhMenu')">RH</button>
+  </nav>
+
+  <!-- Menu Solicitante -->
+  <section id="solicitanteMenu" class="hidden">
+    <h2>Área do Solicitante</h2>
     <form id="formSolicitacao">
-      <label>Nome do Colaborador:</label>
+      <label>Nome:</label>
       <input type="text" id="nome" required>
 
-      <label>Data de Início:</label>
+      <label>Data Início:</label>
       <input type="date" id="dataInicio" required>
 
-      <label>Data de Fim:</label>
+      <label>Data Fim:</label>
       <input type="date" id="dataFim" required>
 
-      <button type="submit">Enviar para Gestor</button>
+      <button type="submit">Enviar Solicitação</button>
     </form>
+
+    <h3>Status das Solicitações</h3>
+    <ul id="statusSolicitacoes"></ul>
   </section>
 
-  <!-- Etapa 2: Aprovação Gestor -->
-  <section id="aprovacaoGestor" class="hidden">
-    <h2>Aprovação do Gestor</h2>
-    <p id="dadosSolicitacao"></p>
-    <button onclick="aprovarGestor()">Aprovar</button>
-    <button onclick="rejeitarGestor()">Rejeitar</button>
+  <!-- Menu Gestor -->
+  <section id="gestorMenu" class="hidden">
+    <h2>Área do Gestor</h2>
+    <ul id="listaGestor"></ul>
   </section>
 
-  <!-- Etapa 3: RH -->
-  <section id="rh" class="hidden">
-    <h2>Confirmação RH</h2>
-    <p id="dadosRH"></p>
-    <button onclick="confirmarRH()">Confirmar RH</button>
-  </section>
-
-  <!-- Etapa 4: Retorno ao Colaborador -->
-  <section id="resultado" class="hidden">
-    <h2>Resultado Final</h2>
-    <p id="mensagemFinal"></p>
+  <!-- Menu RH -->
+  <section id="rhMenu" class="hidden">
+    <h2>Área do RH</h2>
+    <ul id="listaRH"></ul>
   </section>
 
   <script src="script.js"></script>
