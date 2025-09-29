@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do RH</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Painel do RH</h1>
+
+  <p>Bem-vindo, <span id="nomeRh"></span> (<span id="emailRh"></span>)</p>
+  <button onclick="logout()">Sair</button>
+
+  <section>
+    <h2>Solicitações Pendentes do RH</h2>
+    <ul id="listaRhPendentes"></ul>
+  </section>
+
+  <section>
+    <h2>Histórico</h2>
+    <ul id="listaRhHistorico"></ul>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>

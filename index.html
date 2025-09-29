@@ -3,50 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Férias</title>
+  <title>Login - Sistema de Férias</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>Sistema de Solicitação de Férias</h1>
 
-  <!-- Menu de seleção de perfil -->
-  <nav>
-    <button onclick="abrirSecao('solicitanteMenu')">Solicitante</button>
-    <button onclick="abrirSecao('gestorMenu')">Gestor</button>
-    <button onclick="abrirSecao('rhMenu')">RH</button>
-  </nav>
-
-  <!-- Menu Solicitante -->
-  <section id="solicitanteMenu" class="hidden">
-    <h2>Área do Solicitante</h2>
-    <form id="formSolicitacao">
-      <label>Nome:</label>
-      <input type="text" id="nome" required>
-
-      <label>Data Início:</label>
-      <input type="date" id="dataInicio" required>
-
-      <label>Data Fim:</label>
-      <input type="date" id="dataFim" required>
-
-      <button type="submit">Enviar Solicitação</button>
-    </form>
-
-    <h3>Status das Solicitações</h3>
-    <ul id="statusSolicitacoes"></ul>
+  <section id="login">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="email@effico.com.br" required>
+    <input type="password" id="senha" placeholder="Senha" required>
+    <button onclick="login()">Entrar</button>
   </section>
 
-  <!-- Menu Gestor -->
-  <section id="gestorMenu" class="hidden">
-    <h2>Área do Gestor</h2>
-    <ul id="listaGestor"></ul>
+  <section id="signup">
+    <h2>Criar Conta</h2>
+    <input type="email" id="novoEmail" placeholder="email@effico.com.br" required>
+    <input type="password" id="novaSenha" placeholder="Defina uma senha" required>
+    <select id="perfil">
+      <option value="solicitante">Solicitante</option>
+      <option value="gestor">Gestor</option>
+      <option value="rh">RH</option>
+    </select>
+    <button onclick="signup()">Registrar</button>
   </section>
 
-  <!-- Menu RH -->
-  <section id="rhMenu" class="hidden">
-    <h2>Área do RH</h2>
-    <ul id="listaRH"></ul>
-  </section>
+  <p id="mensagem"></p>
 
   <script src="script.js"></script>
 </body>

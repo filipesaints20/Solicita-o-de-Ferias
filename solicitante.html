@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solicitação de Férias</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Solicitação de Férias</h1>
+
+  <p>Bem-vindo, <span id="nomeUsuario"></span> (<span id="emailUsuario"></span>)</p>
+  <button onclick="logout()">Sair</button>
+
+  <section>
+    <h2>Formulário</h2>
+    <form id="formSolicitacao">
+      <label>Data de Início:</label>
+      <input type="date" id="dataInicio" required>
+
+      <label>Data de Fim:</label>
+      <input type="date" id="dataFim" required>
+
+      <button type="submit">Enviar Solicitação</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Minhas Solicitações</h2>
+    <ul id="listaSolicitacoes"></ul>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
