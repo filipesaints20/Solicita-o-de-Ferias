@@ -2,34 +2,32 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - Sistema de Férias</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h2 { margin-bottom: 10px; }
+    input, select, button { display: block; margin: 8px 0; padding: 8px; width: 250px; }
+    #mensagem { margin-top: 10px; color: red; }
+  </style>
 </head>
 <body>
-  <h1>Sistema de Solicitação de Férias</h1>
+  <h2>Login</h2>
+  <input type="email" id="email" placeholder="Email corporativo" required>
+  <input type="password" id="senha" placeholder="Senha" required>
+  <button onclick="login()">Entrar</button>
 
-  <section id="login">
-    <h2>Login</h2>
-    <input type="email" id="email" placeholder="email@effico.com.br" required>
-    <input type="password" id="senha" placeholder="Senha" required>
-    <button onclick="login()">Entrar</button>
-  </section>
-
-  <section id="signup">
-    <h2>Criar Conta</h2>
-    <input type="email" id="novoEmail" placeholder="email@effico.com.br" required>
-    <input type="password" id="novaSenha" placeholder="Defina uma senha" required>
-    <select id="perfil">
-      <option value="solicitante">Solicitante</option>
-      <option value="gestor">Gestor</option>
-      <option value="rh">RH</option>
-    </select>
-    <button onclick="signup()">Registrar</button>
-  </section>
+  <h2>Criar Conta</h2>
+  <input type="email" id="novoEmail" placeholder="Email corporativo" required>
+  <input type="password" id="novaSenha" placeholder="Senha" required>
+  <select id="perfil">
+    <option value="solicitante">Solicitante</option>
+    <option value="gestor">Gestor</option>
+    <option value="rh">RH</option>
+  </select>
+  <button onclick="signup()">Cadastrar</button>
 
   <p id="mensagem"></p>
 
-  <script src="script.js"></script>
+  <script src="login.js"></script>
 </body>
 </html>

@@ -2,26 +2,25 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aprovação de Férias - Gestor</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Painel do Gestor</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h2 { margin-bottom: 10px; }
+    ul { list-style: none; padding: 0; }
+    li { margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+    button { margin-left: 5px; }
+  </style>
 </head>
 <body>
-  <h1>Painel do Gestor</h1>
-
-  <p>Bem-vindo, <span id="nomeGestor"></span> (<span id="emailGestor"></span>)</p>
+  <h2>Bem-vindo, <span id="nomeGestor"></span> (<span id="emailGestor"></span>)</h2>
   <button onclick="logout()">Sair</button>
 
-  <section>
-    <h2>Solicitações Pendentes</h2>
-    <ul id="listaPendentes"></ul>
-  </section>
+  <h3>Solicitações Pendentes</h3>
+  <ul id="listaPendentes"></ul>
 
-  <section>
-    <h2>Histórico</h2>
-    <ul id="listaHistorico"></ul>
-  </section>
+  <h3>Histórico</h3>
+  <ul id="listaHistorico"></ul>
 
-  <script src="script.js"></script>
+  <script src="gestor.js"></script>
 </body>
 </html>

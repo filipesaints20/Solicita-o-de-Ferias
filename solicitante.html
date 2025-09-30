@@ -2,34 +2,30 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Solicitação de Férias</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Solicitante - Pedido de Férias</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h2 { margin-bottom: 10px; }
+    form { margin: 20px 0; }
+    input, button { margin: 5px; padding: 5px; }
+    ul { list-style: none; padding: 0; }
+    li { margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+  </style>
 </head>
 <body>
-  <h1>Solicitação de Férias</h1>
-
-  <p>Bem-vindo, <span id="nomeUsuario"></span> (<span id="emailUsuario"></span>)</p>
+  <h2>Bem-vindo, <span id="nomeUsuario"></span> (<span id="emailUsuario"></span>)</h2>
   <button onclick="logout()">Sair</button>
 
-  <section>
-    <h2>Formulário</h2>
-    <form id="formSolicitacao">
-      <label>Data de Início:</label>
-      <input type="date" id="dataInicio" required>
+  <h3>Nova Solicitação</h3>
+  <form id="formSolicitacao">
+    <label>Data Início: <input type="date" id="dataInicio" required></label>
+    <label>Data Fim: <input type="date" id="dataFim" required></label>
+    <button type="submit">Enviar</button>
+  </form>
 
-      <label>Data de Fim:</label>
-      <input type="date" id="dataFim" required>
+  <h3>Minhas Solicitações</h3>
+  <ul id="listaSolicitacoes"></ul>
 
-      <button type="submit">Enviar Solicitação</button>
-    </form>
-  </section>
-
-  <section>
-    <h2>Minhas Solicitações</h2>
-    <ul id="listaSolicitacoes"></ul>
-  </section>
-
-  <script src="script.js"></script>
+  <script src="solicitante.js"></script>
 </body>
 </html>
