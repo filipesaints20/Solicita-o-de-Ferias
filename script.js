@@ -1,9 +1,9 @@
-// Simulação de "base de dados" no localStorage
-let users = JSON.parse(localStorage.getItem("users")) || [];
+const API_URL = "TUA_URL_DO_APPS_SCRIPT"; // <-- substitui pela URL publicada
 
+// ---------------------- LOGIN & CADASTRO ----------------------
 function signup() {
-  const email = document.getElementById("novoEmail").value;
-  const senha = document.getElementById("novaSenha").value;
+  const email = document.getElementById("novoEmail").value.trim();
+  const senha = document.getElementById("novaSenha").value.trim();
   const perfil = document.getElementById("perfil").value;
 
   if (!email.endsWith("@effico.com.br")) {
@@ -11,52 +11,65 @@ function signup() {
     return;
   }
 
-  if (users.find(u => u.email === email)) {
-    document.getElementById("mensagem").innerText = "Este email já está registado.";
-    return;
-  }
-
-  users.push({ email, senha, perfil });
-  localStorage.setItem("users", JSON.stringify(users));
-  document.getElementById("mensagem").innerText = "Conta criada com sucesso!";
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ tipo: "usuario", email, senha, perfil }),
+    headers: { "Content-Type": "application/json" }
+  })
+  .then(res => res.text())
+  .then(msg => document.getElementById("mensagem").innerText = msg)
+  .catch(err => console.error("Erro:", err));
 }
 
 function login() {
-  const email = document.getElementById("email").value;
-  const senha = document.getElementById("senha").value;
+  const email = document.getElementById("email").value.trim();
+  const senha = document.getElementById("senha").value.trim();
 
-  const user = users.find(u => u.email === email && u.senha === senha);
-  if (!user) {
-    document.getElementById("mensagem").innerText = "Credenciais inválidas!";
-    return;
-  }
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ tipo: "login", email, senha }),
+    headers: { "Content-Type": "application/json" }
+  })
+  .then(res => res.json())
+  .then(resp => {
+    if (!resp.sucesso) {
+      document.getElementById("mensagem").innerText = resp.mensagem;
+      return;
+    }
 
-  localStorage.setItem("usuarioLogado", JSON.stringify(user));
+    const user = { email, perfil: resp.perfil };
+    localStorage.setItem("usuarioLogado", JSON.stringify(user));
 
-  // Redireciona conforme o perfil
-  if (user.perfil === "solicitante") window.location.href = "solicitante.html";
-  if (user.perfil === "gestor") window.location.href = "gestor.html";
-  if (user.perfil === "rh") window.location.href = "rh.html";
+    if (resp.perfil === "solicitante") window.location.href = "solicitante.html";
+    if (resp.perfil === "gestor") window.location.href = "gestor.html";
+    if (resp.perfil === "rh") window.location.href = "rh.html";
+  })
+  .catch(err => console.error("Erro:", err));
 }
+
+function logout() {
+  localStorage.removeItem("usuarioLogado");
+  window.location.href = "index.html";
+}
+
 // ---------------------- SOLICITANTE ----------------------
 function verificarLoginSolicitante() {
   const user = JSON.parse(localStorage.getItem("usuarioLogado"));
   if (!user || user.perfil !== "solicitante") {
-    alert("Acesso não autorizado! Faça login.");
+    alert("Acesso não autorizado!");
     window.location.href = "index.html";
     return;
   }
 
   document.getElementById("nomeUsuario").innerText = user.email.split("@")[0];
   document.getElementById("emailUsuario").innerText = user.email;
-  atualizarListaSolicitacoes(user.email);
 
-  document.getElementById("formSolicitacao")?.addEventListener("submit", (e) => {
+  carregarSolicitacoes(user.email);
+
+  document.getElementById("formSolicitacao")?.addEventListener("submit", e => {
     e.preventDefault();
-
-    let solicitacoes = JSON.parse(localStorage.getItem("solicitacoes")) || [];
-
     const nova = {
+      tipo: "solicitacao",
       id: Date.now(),
       email: user.email,
       inicio: document.getElementById("dataInicio").value,
@@ -65,42 +78,40 @@ function verificarLoginSolicitante() {
       motivo: ""
     };
 
-    solicitacoes.push(nova);
-    localStorage.setItem("solicitacoes", JSON.stringify(solicitacoes));
-    atualizarListaSolicitacoes(user.email);
-
-    e.target.reset();
-    alert("Solicitação enviada!");
+    fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(nova),
+      headers: { "Content-Type": "application/json" }
+    })
+    .then(() => {
+      alert("Solicitação enviada!");
+      e.target.reset();
+      carregarSolicitacoes(user.email);
+    })
+    .catch(err => console.error("Erro:", err));
   });
 }
 
-function atualizarListaSolicitacoes(email) {
-  let solicitacoes = JSON.parse(localStorage.getItem("solicitacoes")) || [];
-  const lista = document.getElementById("listaSolicitacoes");
-  if (!lista) return;
-
-  lista.innerHTML = "";
-  solicitacoes.filter(s => s.email === email).forEach(s => {
-    const li = document.createElement("li");
-    li.textContent = `${s.inicio} → ${s.fim} | Status: ${s.status}` +
-                     (s.motivo ? ` | Motivo: ${s.motivo}` : "");
-    lista.appendChild(li);
-  });
+function carregarSolicitacoes(email) {
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(dados => {
+      const lista = document.getElementById("listaSolicitacoes");
+      lista.innerHTML = "";
+      dados.filter((r, i) => i > 0 && r[1] === email).forEach(r => {
+        const li = document.createElement("li");
+        li.textContent = `${r[2]} → ${r[3]} | Status: ${r[4]}` +
+                         (r[5] ? ` | Motivo: ${r[5]}` : "");
+        lista.appendChild(li);
+      });
+    });
 }
 
-function logout() {
-  localStorage.removeItem("usuarioLogado");
-  window.location.href = "index.html";
-}
-
-if (window.location.pathname.includes("solicitante.html")) {
-  verificarLoginSolicitante();
-}
 // ---------------------- GESTOR ----------------------
 function verificarLoginGestor() {
   const user = JSON.parse(localStorage.getItem("usuarioLogado"));
   if (!user || user.perfil !== "gestor") {
-    alert("Acesso não autorizado! Faça login.");
+    alert("Acesso não autorizado!");
     window.location.href = "index.html";
     return;
   }
@@ -111,54 +122,56 @@ function verificarLoginGestor() {
 }
 
 function carregarSolicitacoesGestor() {
-  let solicitacoes = JSON.parse(localStorage.getItem("solicitacoes")) || [];
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(dados => {
+      const listaPendentes = document.getElementById("listaPendentes");
+      const listaHistorico = document.getElementById("listaHistorico");
 
-  const listaPendentes = document.getElementById("listaPendentes");
-  const listaHistorico = document.getElementById("listaHistorico");
+      listaPendentes.innerHTML = "";
+      listaHistorico.innerHTML = "";
 
-  listaPendentes.innerHTML = "";
-  listaHistorico.innerHTML = "";
+      dados.slice(1).forEach(r => {
+        const s = { id: r[0], email: r[1], inicio: r[2], fim: r[3], status: r[4], motivo: r[5] };
+        const li = document.createElement("li");
+        li.innerHTML = `${s.email} → ${s.inicio} até ${s.fim} | Status: ${s.status}`;
 
-  solicitacoes.forEach((s, i) => {
-    const li = document.createElement("li");
-    li.innerHTML = `${s.email} → ${s.inicio} até ${s.fim} | Status: ${s.status}`;
+        if (s.status === "Pendente do Gestor") {
+          const aprovar = document.createElement("button");
+          aprovar.textContent = "✔ Aprovar";
+          aprovar.onclick = () => atualizarStatus(s.id, "Aprovado pelo Gestor");
 
-    if (s.status === "Pendente do Gestor") {
-      const aprovarBtn = document.createElement("button");
-      aprovarBtn.textContent = "✔ Aprovar";
-      aprovarBtn.onclick = () => atualizarStatus(i, "Aprovado pelo Gestor");
+          const rejeitar = document.createElement("button");
+          rejeitar.textContent = "✖ Rejeitar";
+          rejeitar.onclick = () => {
+            const motivo = prompt("Motivo da rejeição:");
+            if (motivo) atualizarStatus(s.id, "Rejeitado pelo Gestor", motivo);
+          };
 
-      const rejeitarBtn = document.createElement("button");
-      rejeitarBtn.textContent = "✖ Rejeitar";
-      rejeitarBtn.onclick = () => {
-        const motivo = prompt("Digite o motivo da rejeição:");
-        if (motivo) atualizarStatus(i, "Rejeitado pelo Gestor", motivo);
-      };
-
-      li.appendChild(aprovarBtn);
-      li.appendChild(rejeitarBtn);
-      listaPendentes.appendChild(li);
-    } else {
-      if (s.motivo) {
-        li.innerHTML += ` | Motivo: ${s.motivo}`;
-      }
-      listaHistorico.appendChild(li);
-    }
-  });
+          li.append(aprovar, rejeitar);
+          listaPendentes.appendChild(li);
+        } else {
+          if (s.motivo) li.innerHTML += ` | Motivo: ${s.motivo}`;
+          listaHistorico.appendChild(li);
+        }
+      });
+    });
 }
 
-function atualizarStatus(index, novoStatus, motivo = "") {
-  let solicitacoes = JSON.parse(localStorage.getItem("solicitacoes")) || [];
-  solicitacoes[index].status = novoStatus;
-  solicitacoes[index].motivo = motivo;
-  localStorage.setItem("solicitacoes", JSON.stringify(solicitacoes));
-  carregarSolicitacoesGestor();
+function atualizarStatus(id, status, motivo = "") {
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ tipo: "update", id, status, motivo }),
+    headers: { "Content-Type": "application/json" }
+  })
+  .then(() => carregarSolicitacoesGestor());
 }
+
 // ---------------------- RH ----------------------
 function verificarLoginRh() {
   const user = JSON.parse(localStorage.getItem("usuarioLogado"));
   if (!user || user.perfil !== "rh") {
-    alert("Acesso não autorizado! Faça login.");
+    alert("Acesso não autorizado!");
     window.location.href = "index.html";
     return;
   }
@@ -169,55 +182,50 @@ function verificarLoginRh() {
 }
 
 function carregarSolicitacoesRh() {
-  let solicitacoes = JSON.parse(localStorage.getItem("solicitacoes")) || [];
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(dados => {
+      const listaP = document.getElementById("listaRhPendentes");
+      const listaH = document.getElementById("listaRhHistorico");
+      listaP.innerHTML = "";
+      listaH.innerHTML = "";
 
-  const listaPendentes = document.getElementById("listaRhPendentes");
-  const listaHistorico = document.getElementById("listaRhHistorico");
+      dados.slice(1).forEach(r => {
+        const s = { id: r[0], email: r[1], inicio: r[2], fim: r[3], status: r[4], motivo: r[5] };
+        const li = document.createElement("li");
+        li.innerHTML = `${s.email} → ${s.inicio} até ${s.fim} | Status: ${s.status}`;
 
-  listaPendentes.innerHTML = "";
-  listaHistorico.innerHTML = "";
+        if (s.status === "Aprovado pelo Gestor") {
+          const validar = document.createElement("button");
+          validar.textContent = "✔ Validar RH";
+          validar.onclick = () => atualizarStatusRh(s.id, "Validado pelo RH");
 
-  solicitacoes.forEach((s, i) => {
-    const li = document.createElement("li");
-    li.innerHTML = `${s.email} → ${s.inicio} até ${s.fim} | Status: ${s.status}`;
+          const rejeitar = document.createElement("button");
+          rejeitar.textContent = "✖ Rejeitar RH";
+          rejeitar.onclick = () => {
+            const motivo = prompt("Motivo da recusa:");
+            if (motivo) atualizarStatusRh(s.id, "Rejeitado pelo RH", motivo);
+          };
 
-    // Só entra aqui se o gestor já aprovou
-    if (s.status === "Aprovado pelo Gestor") {
-      const aprovarBtn = document.createElement("button");
-      aprovarBtn.textContent = "✔ Validar RH";
-      aprovarBtn.onclick = () => atualizarStatusRh(i, "Validado pelo RH");
-
-      const rejeitarBtn = document.createElement("button");
-      rejeitarBtn.textContent = "✖ Rejeitar RH";
-      rejeitarBtn.onclick = () => {
-        const motivo = prompt("Digite o motivo da recusa pelo RH:");
-        if (motivo) atualizarStatusRh(i, "Rejeitado pelo RH", motivo);
-      };
-
-      li.appendChild(aprovarBtn);
-      li.appendChild(rejeitarBtn);
-      listaPendentes.appendChild(li);
-    } else if (s.status.includes("RH")) {
-      // Tudo que já passou pelo RH
-      if (s.motivo) {
-        li.innerHTML += ` | Motivo: ${s.motivo}`;
-      }
-      listaHistorico.appendChild(li);
-    }
-  });
+          li.append(validar, rejeitar);
+          listaP.appendChild(li);
+        } else if (s.status.includes("RH")) {
+          if (s.motivo) li.innerHTML += ` | Motivo: ${s.motivo}`;
+          listaH.appendChild(li);
+        }
+      });
+    });
 }
 
-function atualizarStatusRh(index, novoStatus, motivo = "") {
-  let solicitacoes = JSON.parse(localStorage.getItem("solicitacoes")) || [];
-  solicitacoes[index].status = novoStatus;
-  solicitacoes[index].motivo = motivo;
-  localStorage.setItem("solicitacoes", JSON.stringify(solicitacoes));
-  carregarSolicitacoesRh();
+function atualizarStatusRh(id, status, motivo = "") {
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ tipo: "update", id, status, motivo }),
+    headers: { "Content-Type": "application/json" }
+  })
+  .then(() => carregarSolicitacoesRh());
 }
 
-if (window.location.pathname.includes("rh.html")) {
-  verificarLoginRh();
-}
 
 
 
