@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxfvFVdodZeuNkI2gXRrqwabXZJzcUNVueF3w8iSH5fPTCCtjnuwsF7bO9JJabIHxFW/exechttps://script.google.com/macros/s/AKfycbyWqdx2aylCVuB0XPBznV3W5i3Vzk8nj82Ynr9RBtOEwdtBmYOu6rRkV0CUoC_3WMny/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwdtemvrHrAzT_8NVICZ10F5Zee9IuHOAt5BMooOlytMZjuBqJUJCIclWyp2JlCEMxv/exec";
 
 // Criar conta
 function signup() {
