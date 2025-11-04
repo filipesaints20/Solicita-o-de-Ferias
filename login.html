@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EFFICO Saneamento | Solicitação de Férias</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <img src="img/logo-effico.png" alt="Logo EFFICO" class="logo">
+
+      <h2>Portal de Férias - EFFICO Saneamento</h2>
+
+      <div class="tabs">
+        <button class="tab active" id="tabLogin">Login</button>
+        <button class="tab" id="tabCadastro">Criar Conta</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="loginForm" class="form active">
+        <input type="email" id="email" placeholder="Email corporativo">
+        <input type="password" id="senha" placeholder="Senha">
+        <button onclick="login()">Entrar</button>
+      </div>
+
+      <!-- CADASTRO -->
+      <div id="cadastroForm" class="form">
+        <input type="email" id="novoEmail" placeholder="Email corporativo">
+        <input type="password" id="novaSenha" placeholder="Crie uma senha">
+        <select id="perfil">
+          <option value="solicitante">Solicitante</option>
+          <option value="gestor">Gestor</option>
+          <option value="rh">RH</option>
+        </select>
+        <button onclick="signup()">Criar Conta</button>
+      </div>
+
+      <p id="mensagem"></p>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+  <script>
+    // Alternar entre login e cadastro
+    const tabLogin = document.getElementById("tabLogin");
+    const tabCadastro = document.getElementById("tabCadastro");
+    const loginForm = document.getElementById("loginForm");
+    const cadastroForm = document.getElementById("cadastroForm");
+
+    tabLogin.addEventListener("click", () => {
+      tabLogin.classList.add("active");
+      tabCadastro.classList.remove("active");
+      loginForm.classList.add("active");
+      cadastroForm.classList.remove("active");
+    });
+
+    tabCadastro.addEventListener("click", () => {
+      tabCadastro.classList.add("active");
+      tabLogin.classList.remove("active");
+      cadastroForm.classList.add("active");
+      loginForm.classList.remove("active");
+    });
+  </script>
+</body>
+</html>
